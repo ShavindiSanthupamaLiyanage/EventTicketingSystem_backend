@@ -1,4 +1,4 @@
-package com.shavi.RealTimeEventTicketingSystem;
+package com.shavi.RealTimeEventTicketingSystem.configurations;
 
 import com.shavi.RealTimeEventTicketingSystem.entity.Configuration;
 import com.shavi.RealTimeEventTicketingSystem.service.ConfigurationService;

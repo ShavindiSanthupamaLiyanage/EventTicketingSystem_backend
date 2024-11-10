@@ -1,13 +1,13 @@
-package com.shavi.RealTimeEventTicketingSystem.dto;
+package com.shavi.RealTimeEventTicketingSystem.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
+@Data
+public class AuthenticationRequest {
     private String username;
-    private String userType;
+    private String password;
 }

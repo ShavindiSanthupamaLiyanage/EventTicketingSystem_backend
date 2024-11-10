@@ -1,5 +1,7 @@
 package com.shavi.realtimeeventticketingsystemcli;
 
+import com.shavi.realtimeeventticketingsystemcli.configurations.LoggerConfiguration;
+
 public class Vendor extends LoggerConfiguration implements Runnable {
     private final int vendorId;
     private final int ticketsPerRelease;
