@@ -22,5 +22,11 @@ public class ConfigurationController {
     public List<Configuration> getConfiguration() {
         return configurationService.getAllConfigurations();
     }
+
+    @GetMapping("/get/configure/{id}")
+    public Configuration getConfigurationById(@PathVariable Long id) {
+        return configurationService.getConfigurationById(id);
+    }
+
 }
 

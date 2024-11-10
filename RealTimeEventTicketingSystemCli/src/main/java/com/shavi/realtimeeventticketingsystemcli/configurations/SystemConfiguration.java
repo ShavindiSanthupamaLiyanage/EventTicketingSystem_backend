@@ -1,4 +1,4 @@
-package com.shavi.realtimeeventticketingsystemcli;
+package com.shavi.realtimeeventticketingsystemcli.configurations;
 
 public class SystemConfiguration extends LoggerConfiguration {
     private int totalTickets;

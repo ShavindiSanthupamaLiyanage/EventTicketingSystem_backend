@@ -1,5 +1,7 @@
 package com.shavi.realtimeeventticketingsystemcli;
 
+import com.shavi.realtimeeventticketingsystemcli.configurations.LoggerConfiguration;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Ticket extends LoggerConfiguration {

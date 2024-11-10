@@ -19,5 +19,4 @@ public class Configuration {
     private int customerRetrievalRate;
     private int maxTicketCapacity;
 
-    // Getters and setters
 }

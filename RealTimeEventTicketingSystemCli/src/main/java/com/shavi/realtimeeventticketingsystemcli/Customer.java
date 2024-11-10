@@ -1,5 +1,7 @@
 package com.shavi.realtimeeventticketingsystemcli;
 
+import com.shavi.realtimeeventticketingsystemcli.configurations.LoggerConfiguration;
+
 public class Customer extends LoggerConfiguration implements Runnable {
     private final int customerId; // Unique identifier for the customer
     private final TicketPool ticketPool; // Reference to the shared TicketPool
@@ -17,25 +19,29 @@ public class Customer extends LoggerConfiguration implements Runnable {
     public void run() {
         while (true) {
             try {
+                boolean ticketAvailable = false;
                 // Attempt to retrieve the specified number of tickets from the pool
                 for (int i = 0; i < ticketsPerRetrieval; i++) {
                     Ticket ticket = ticketPool.retrieveTicket();
                     if (ticket != null) {
+                        ticketAvailable = true;
                         System.out.printf("Customer %d successfully purchased ticket %d%n", customerId, ticket.getId());
-                        logger.info("Customer " + customerId + " successfully purchased ticket " + ticket.getId()); // Log successful purchase
+                        logger.info("Customer " + customerId + " successfully purchased ticket " + ticket.getId());
                     } else {
-                        logger.info("Customer " + customerId + " found no tickets available."); // Log when no tickets are available
-                        break; // If no ticket is returned, break the loop
+                        logger.info("Customer " + customerId + " found no tickets available.");
+                        break; // Exit loop if no tickets are available
                     }
                 }
+                if (!ticketAvailable) break; // Exit if no tickets were retrieved in this cycle
+
                 // Wait for the specified interval before the next purchase attempt
                 Thread.sleep(retrievalInterval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // Restore interrupted status
-                logger.warning("Customer " + customerId + " could not purchase tickets at this time. Tickets may become available shortly."); // Log warning
-                System.out.printf("Customer " + customerId + " could not purchase tickets at this time. Tickets may become available shortly. Please hold on for the next release %n");
+                logger.warning("Customer " + customerId + " could not purchase tickets at this time.");
                 break;
             }
         }
     }
+
 }

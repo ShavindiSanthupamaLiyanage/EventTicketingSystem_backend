@@ -1,4 +1,4 @@
-package com.shavi.realtimeeventticketingsystemcli;
+package com.shavi.realtimeeventticketingsystemcli.configurations;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

@@ -1,6 +1,6 @@
 package com.shavi.RealTimeEventTicketingSystem.enums;
 
-public enum UserType {
-    CUSTOMER,
-    VENDOR
+public enum UserRole {
+    VENDOR,
+    CUSTOMER
 }
