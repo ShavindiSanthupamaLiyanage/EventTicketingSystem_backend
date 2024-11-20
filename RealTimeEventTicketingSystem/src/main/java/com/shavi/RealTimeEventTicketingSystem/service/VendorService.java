@@ -116,5 +116,14 @@ public class VendorService {
 
     }
 
+    // Delete Vendor
+    public boolean deleteVendor(Long id) {
+        if (vendorRepository.existsById(id)) {
+            vendorRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
 
 }
