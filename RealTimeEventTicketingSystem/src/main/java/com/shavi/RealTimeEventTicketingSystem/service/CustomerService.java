@@ -110,5 +110,14 @@ public class CustomerService {
         return customerRepository.save(updatedCustomer);
 
     }
+
+    // Delete Vendor
+    public boolean deleteCustomer(Long id) {
+        if (customerRepository.existsById(id)) {
+            customerRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }
 

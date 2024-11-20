@@ -41,4 +41,13 @@ public class CustomerController {
         Customer customer = customerService.updateCustomer(id, updatedCustomer); // This will throw ResourceNotFoundException if vendor not found
         return ResponseEntity.ok(customer);
     }
+
+    // Delete event
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
+        boolean deleted = customerService.deleteCustomer(id);
+        return deleted
+                ? ResponseEntity.ok("Customer deleted successfully.")
+                : ResponseEntity.status(404).body("Customer not found.");
+    }
 }

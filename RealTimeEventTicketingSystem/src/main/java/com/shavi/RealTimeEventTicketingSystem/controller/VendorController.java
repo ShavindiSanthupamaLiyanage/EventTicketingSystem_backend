@@ -41,4 +41,13 @@ public class VendorController {
         Vendor vendor = vendorService.updateVendor(id, updatedVendor); // This will throw ResourceNotFoundException if vendor not found
         return ResponseEntity.ok(vendor);
     }
+
+    // Delete event
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteVendor(@PathVariable Long id) {
+        boolean deleted = vendorService.deleteVendor(id);
+        return deleted
+                ? ResponseEntity.ok("Vendor deleted successfully.")
+                : ResponseEntity.status(404).body("Vendor not found.");
+    }
 }
