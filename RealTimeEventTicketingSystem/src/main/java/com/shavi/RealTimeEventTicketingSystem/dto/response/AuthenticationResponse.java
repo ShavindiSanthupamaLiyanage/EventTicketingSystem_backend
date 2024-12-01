@@ -35,6 +35,4 @@ public class AuthenticationResponse {
     public AuthenticationResponse(String message) {
         this.message = message;
     }
-
-
 }

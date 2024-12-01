@@ -61,4 +61,29 @@ public class TicketService {
 
         return "Ticket purchase successful!";
     }
+
+    // New method: Get available tickets for an event
+    public int getAvailableTickets(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+        int ticketsSold = ticketRepository.sumTicketsByEvent(eventId);
+        return event.getTotalTickets() - ticketsSold;
+    }
+
+    // New method: Add tickets to an event
+    @Transactional
+    public String addTickets(Long eventId, int quantity) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        if (quantity <= 0) {
+            return "Quantity must be greater than zero.";
+        }
+
+        event.setAvailableTickets(event.getAvailableTickets() + quantity);
+        event.setTotalTickets(event.getTotalTickets() + quantity);
+
+        eventRepository.save(event);
+        return "Tickets added successfully!";
+    }
 }

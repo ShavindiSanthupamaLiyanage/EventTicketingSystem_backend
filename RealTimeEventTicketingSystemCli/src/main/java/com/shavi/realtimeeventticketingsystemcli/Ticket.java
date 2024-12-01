@@ -9,6 +9,7 @@ public class Ticket extends LoggerConfiguration {
     private final int id;
     private final int vendorId; // Add vendorId attribute
 
+
     // Constructor that accepts vendorId
     public Ticket(int vendorId) {
         this.id = idCounter.incrementAndGet();
