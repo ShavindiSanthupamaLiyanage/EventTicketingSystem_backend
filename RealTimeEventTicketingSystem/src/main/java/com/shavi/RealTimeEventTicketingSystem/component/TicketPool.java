@@ -56,6 +56,8 @@
 package com.shavi.RealTimeEventTicketingSystem.component;
 
 import com.shavi.RealTimeEventTicketingSystem.entity.Ticket;
+import com.shavi.RealTimeEventTicketingSystem.repository.TicketRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -67,44 +69,43 @@ public class TicketPool {
 
     private final List<Ticket> tickets = Collections.synchronizedList(new ArrayList<>());
 
-    // Add tickets to the pool (no changes needed here)
+    // Add tickets to the pool
     public synchronized void addTickets(int numberOfTickets) {
         for (int i = 0; i < numberOfTickets; i++) {
             tickets.add(new Ticket());
         }
         System.out.println(numberOfTickets + " tickets added to the pool.");
+        System.out.println("Current Ticket Pool Size: " + tickets.size());
     }
 
-    // Method to check if enough tickets are available
     public synchronized boolean checkTicketAvailability(int quantity) {
-        // If the number of available tickets is greater than or equal to the quantity requested, return true
+        System.out.println("Checking availability for quantity: " + quantity);
+        System.out.println("Current Ticket Pool Size: " + tickets.size());
         return tickets.size() >= quantity;
     }
 
-    // Modify the purchaseTicket method to accept the eventId, userId, and quantity
     public synchronized void purchaseTicket(Long eventId, Integer userId, int quantity) throws InterruptedException {
         while (tickets.isEmpty()) {
-            wait();  // Wait until a ticket is available
+            System.out.println("No tickets available, waiting...");
+            wait();
         }
 
-        // Ensure the ticket pool has enough tickets
+        System.out.println("Attempting to purchase " + quantity + " tickets for eventId " + eventId);
+
         if (tickets.size() < quantity) {
+            System.out.println("Not enough tickets available for purchase.");
             throw new IllegalStateException("Not enough tickets available for purchase.");
         }
 
-        // Create tickets based on quantity and assign eventId, userId, and quantity
-        Ticket purchasedTicket = new Ticket();
-        purchasedTicket.setEventId(eventId);
-        purchasedTicket.setUserId(userId);
-        purchasedTicket.setQuantity(quantity);
-        purchasedTicket.setStatus("PURCHASED");
-
-        // Deduct the required number of tickets from the pool
         for (int i = 0; i < quantity; i++) {
-            tickets.remove(0);  // Remove tickets from the pool
+            tickets.remove(0);
         }
 
-        // Notify other threads that tickets have been purchased
+        System.out.println(quantity + " tickets purchased. Remaining tickets: " + tickets.size());
         notifyAll();
     }
+
 }
+
+
+
