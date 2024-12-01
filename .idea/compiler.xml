@@ -8,9 +8,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="RealTimeEventTicketingSystem" />
-        <module name="RealTimeEventTicketingSystemCli" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="RealTimeEventTicketingSystemCli" target="23" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

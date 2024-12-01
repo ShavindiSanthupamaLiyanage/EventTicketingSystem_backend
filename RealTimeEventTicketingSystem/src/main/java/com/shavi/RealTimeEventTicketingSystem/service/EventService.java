@@ -1,14 +1,11 @@
 package com.shavi.RealTimeEventTicketingSystem.service;
 
 import com.shavi.RealTimeEventTicketingSystem.entity.Event;
-import com.shavi.RealTimeEventTicketingSystem.exception.ValidationException;
+import com.shavi.RealTimeEventTicketingSystem.entity.SystemConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.repository.EventRepository;
+import com.shavi.RealTimeEventTicketingSystem.component.TicketPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EventService {
@@ -16,69 +13,90 @@ public class EventService {
     @Autowired
     private EventRepository eventRepository;
 
-    public Event addEvent(Event event) {
-        //****
-        event.setAvailableTickets(event.getTotalTickets());
-        validateEvent(event);
-        return eventRepository.save(event);
-    }
+    @Autowired
+    private SystemConfigurationService systemConfigurationService;
 
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
-    }
+    @Autowired
+    private TicketPool ticketPool;
 
-    public Optional<Event> getEventById(Long id) {
-        return eventRepository.findById(id);
-    }
-
-    public List<Event> getEventsByName(String name) {
-        return eventRepository.findByNameContainingIgnoreCase(name);
-    }
-
-    public Optional<Event> updateEvent(Long id, Event eventDetails) {
-        return eventRepository.findById(id).map(event -> {
-            event.setName(eventDetails.getName());
-            event.setDate(eventDetails.getDate());
-            event.setLocation(eventDetails.getLocation());
-            event.setVendor(eventDetails.getVendor());
-            event.setAvailableTickets(eventDetails.getTotalTickets());
-            event.setTotalTickets(eventDetails.getTotalTickets());
-            event.setAvailableTickets(eventDetails.getAvailableTickets());
-            event.setSoldTickets(eventDetails.getSoldTickets());
-            event.setTicketPrice(eventDetails.getTicketPrice());
-
-            // Ensure the status from the request is set
-            event.setStatus(eventDetails.getStatus());
-
-            validateEvent(event);
-            return eventRepository.save(event);
-        });
-    }
-
-    public boolean deleteEvent(Long id) {
-        if (eventRepository.existsById(id)) {
-            eventRepository.deleteById(id);
-            return true;
+    // Create an event and add the corresponding number of tickets to the pool
+    public void addEvent(Event event) {
+        // Fetch the running configuration to validate ticket limits
+        SystemConfiguration config = systemConfigurationService.getRunningConfiguration();
+        if (config == null || !config.isRunning()) {
+            throw new IllegalStateException("System is not running. Cannot create events.");
         }
-        return false;
+
+        // Validate ticket count
+        if (event.getNoOfTickets() > config.getTotalTickets()) {
+            throw new IllegalArgumentException("The number of tickets exceeds the available tickets in the system.");
+        }
+
+        // Save the event in the database
+        eventRepository.save(event);
+
+        // Add the tickets to the ticket pool
+        ticketPool.addTickets(event.getNoOfTickets());
     }
 
-    private void validateEvent(Event event) {
-        List<String> errors = new ArrayList<>();
-        if (event.getName() == null || event.getName().isEmpty()) {
-            errors.add("Event name must be provided.");
-        }
-        if (event.getDate() == null) {
-            errors.add("Event date must be provided.");
-        }
-        if (event.getLocation() == null || event.getLocation().isEmpty()) {
-            errors.add("Event location must be provided.");
-        }
-        if (event.getVendor() == null || event.getVendor().getId() == null) {
-            errors.add("Vendor ID must be provided.");
-        }
-        if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
-        }
+
+    // Retrieve event details by event ID
+    public Event getEvent(Long eventId) {
+        return eventRepository.findById(eventId).orElse(null);
     }
+
+    // Additional methods can be added for updating or deleting events if required
+
+    // Retrieve event by ID
+    public Event getEventById(Long eventId) {
+        return eventRepository.findById(eventId).orElse(null);  // Returns null if event is not found
+    }
+
+    // Retrieve event by name
+    public Event getEventByName(String eventName) {
+        return eventRepository.findByEventName(eventName).orElse(null);  // Returns null if event is not found
+    }
+
+    // Update event
+    public Event updateEvent(Long eventId, Event updatedEvent) {
+        Event existingEvent = getEventById(eventId);
+        if (existingEvent == null) {
+            throw new IllegalArgumentException("Event not found.");
+        }
+
+        existingEvent.setEventName(updatedEvent.getEventName());
+        existingEvent.setNoOfTickets(updatedEvent.getNoOfTickets());
+        existingEvent.setDate(updatedEvent.getDate());
+
+        return eventRepository.save(existingEvent);  // Save and return the updated event
+    }
+
+    // Delete event
+    public void deleteEvent(Long eventId) {
+        Event event = getEventById(eventId);
+        if (event == null) {
+            throw new IllegalArgumentException("Event not found.");
+        }
+
+        eventRepository.delete(event);  // Delete the event from the database
+    }
+
+    // Update event when a ticket is purchased
+    public void updateEventForTicketPurchase(Long eventId) {
+        Event existingEvent = getEventById(eventId);
+        if (existingEvent == null) {
+            throw new IllegalArgumentException("Event not found.");
+        }
+
+        if (existingEvent.getNoOfTickets() <= 0) {
+            throw new IllegalStateException("No tickets available for this event.");
+        }
+
+        // Decrement the ticket count
+        existingEvent.setNoOfTickets(existingEvent.getNoOfTickets() - 1);
+
+        // Save the updated event
+        eventRepository.save(existingEvent);
+    }
+
 }

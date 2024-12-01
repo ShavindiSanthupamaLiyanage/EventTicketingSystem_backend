@@ -1,53 +1,68 @@
-//package com.shavi.RealTimeEventTicketingSystem.controller;
-//
-//import com.shavi.RealTimeEventTicketingSystem.dto.UserDto;
-//import com.shavi.RealTimeEventTicketingSystem.entity.Vendor;
+package com.shavi.RealTimeEventTicketingSystem.controller;
+
+import com.shavi.RealTimeEventTicketingSystem.entity.Event;
+import com.shavi.RealTimeEventTicketingSystem.service.EventService;
 //import com.shavi.RealTimeEventTicketingSystem.service.VendorService;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@RestController
-//@RequestMapping("/api/vendors")
-//public class VendorController {
-//
-//    @Autowired
-//    private VendorService vendorService;
-//
-//    @PostMapping("/register")
-//    public ResponseEntity<String> registerVendor(@RequestBody UserDto userDto) {
-//        Vendor registeredVendor = vendorService.registerVendor(userDto);
-//        return ResponseEntity.ok("Vendor registered successfully with ID: " + registeredVendor.getId());
-//    }
-//
-//    // Get all vendors
-//    @GetMapping("/vendors")
-//    public List<Vendor> getAllVendors() {
-//        return vendorService.getAllVendors();
-//    }
-//
-//    // Get vendor by ID
-//    @GetMapping("/vendors/{id}")
-//    public ResponseEntity<Vendor> getVendorById(@PathVariable Long id) {
-//        Vendor vendor = vendorService.getVendorById(id); // This will throw ResourceNotFoundException if vendor not found
-//        return ResponseEntity.ok(vendor);
-//    }
-//
-//    // Update an existing vendor
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Vendor> updateVendor(@PathVariable Long id, @RequestBody Vendor updatedVendor) {
-//        Vendor vendor = vendorService.updateVendor(id, updatedVendor); // This will throw ResourceNotFoundException if vendor not found
-//        return ResponseEntity.ok(vendor);
-//    }
-//
-//    // Delete event
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteVendor(@PathVariable Long id) {
-//        boolean deleted = vendorService.deleteVendor(id);
-//        return deleted
-//                ? ResponseEntity.ok("Vendor deleted successfully.")
-//                : ResponseEntity.status(404).body("Vendor not found.");
-//    }
-//}
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/vendor")
+public class VendorController {
+
+    @Autowired
+    private EventService eventService;
+
+    @PostMapping("/addEvent")
+    public ResponseEntity<String> addEvent(@RequestBody Event event) {
+        try {
+            eventService.addEvent(event);
+            return ResponseEntity.ok("Event and tickets added successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
+
+
+    @GetMapping("/getEvent/{eventId}")
+    public ResponseEntity<Event> getEvent(@PathVariable Long eventId) {
+        Event event = eventService.getEventById(eventId);
+        if (event == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(event);
+    }
+
+    @GetMapping("/getEventByName/{eventName}")
+    public ResponseEntity<Event> getEventByName(@PathVariable String eventName) {
+        Event event = eventService.getEventByName(eventName);
+        if (event == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(event);
+    }
+
+    @PutMapping("/updateEvent/{eventId}")
+    public ResponseEntity<Event> updateEvent(@PathVariable Long eventId, @RequestBody Event updatedEvent) {
+        try {
+            Event updated = eventService.updateEvent(eventId, updatedEvent);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @DeleteMapping("/deleteEvent/{eventId}")
+    public ResponseEntity<String> deleteEvent(@PathVariable Long eventId) {
+        try {
+            eventService.deleteEvent(eventId);
+            return ResponseEntity.ok("Event deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Event not found.");
+        }
+    }
+}

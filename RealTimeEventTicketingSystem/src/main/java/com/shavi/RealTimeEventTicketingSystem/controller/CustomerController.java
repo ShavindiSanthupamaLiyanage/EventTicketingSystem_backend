@@ -51,3 +51,73 @@
 //                : ResponseEntity.status(404).body("Customer not found.");
 //    }
 //}
+
+package com.shavi.RealTimeEventTicketingSystem.controller;
+
+import com.shavi.RealTimeEventTicketingSystem.component.TicketPool;
+import com.shavi.RealTimeEventTicketingSystem.entity.Event;
+import com.shavi.RealTimeEventTicketingSystem.entity.Ticket;
+//import com.shavi.RealTimeEventTicketingSystem.service.CustomerService;
+import com.shavi.RealTimeEventTicketingSystem.service.EventService;
+import com.shavi.RealTimeEventTicketingSystem.service.TicketService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/customer")
+public class CustomerController {
+
+//    @Autowired
+//    private CustomerService customerService;
+
+//    @PostMapping("/purchase")
+//    public ResponseEntity<String> purchaseTicket(@RequestBody Ticket ticket) {
+//        customerService.purchaseTicket(ticket);
+//        return ResponseEntity.ok("Purchase attempted.");
+//    }
+//}
+
+
+
+//@PostMapping("/addEvent")
+//public ResponseEntity<String> addEvent(@RequestBody Event event) {
+//    try {
+//        vendorService.addEvent(event);
+//        return ResponseEntity.ok("Event and tickets added successfully.");
+//    } catch (IllegalArgumentException e) {
+//        return ResponseEntity.badRequest().body(e.getMessage());
+//    } catch (IllegalStateException e) {
+//        return ResponseEntity.status(500).body(e.getMessage());
+//    }
+//}
+
+    @Autowired
+    private EventService eventService;
+
+    @Autowired
+    private TicketService ticketService;
+
+    // Other existing methods...
+
+    @PostMapping("/purchaseTicket/{eventId}/{userId}")
+    public ResponseEntity<String> purchaseTicket(@PathVariable Long eventId,
+                                                 @PathVariable int userId,
+                                                 @RequestParam int quantity) {
+        try {
+            // Validate ticket availability
+            if (quantity <= 0) {
+                return ResponseEntity.badRequest().body("Quantity must be greater than zero.");
+            }
+
+            // Call the service to purchase the ticket
+            Ticket ticket = ticketService.purchaseTicket(eventId, userId, quantity);
+            return ResponseEntity.ok("Ticket purchased successfully. Ticket ID: " + ticket.getId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred while purchasing the ticket.");
+        }
+    }
+}
+
