@@ -1,5 +1,6 @@
 package com.shavi.RealTimeEventTicketingSystem.dto;
 
+import com.shavi.RealTimeEventTicketingSystem.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,4 +13,5 @@ public class UserDto {
     private String password;
     private String email;
     private String phoneNumber;
+    private UserRole role;
 }
