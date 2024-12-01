@@ -2,14 +2,13 @@ package com.shavi.RealTimeEventTicketingSystem.controller;
 
 import com.shavi.RealTimeEventTicketingSystem.entity.Event;
 import com.shavi.RealTimeEventTicketingSystem.service.EventService;
-//import com.shavi.RealTimeEventTicketingSystem.service.VendorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/vendor")
-public class VendorController {
+@RequestMapping("/Event")
+public class EventController {
 
     @Autowired
     private EventService eventService;
@@ -25,8 +24,6 @@ public class VendorController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
-
-
 
     @GetMapping("/getEvent/{eventId}")
     public ResponseEntity<Event> getEvent(@PathVariable Long eventId) {
