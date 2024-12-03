@@ -23,6 +23,5 @@ public class SystemConfiguration {
     private int maxTicketCapacity;
     private int numVendors;
     private int numCustomers;
-
-    private boolean running = false; // Indicates whether the system is active
+    private boolean running = false;
 }

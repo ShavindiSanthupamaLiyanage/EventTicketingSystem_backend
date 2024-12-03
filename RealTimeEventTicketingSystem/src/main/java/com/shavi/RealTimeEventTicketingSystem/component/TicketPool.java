@@ -1,66 +1,54 @@
 package com.shavi.RealTimeEventTicketingSystem.component;
 
 import com.shavi.RealTimeEventTicketingSystem.entity.Ticket;
+import com.shavi.RealTimeEventTicketingSystem.enums.TicketStatus;
+import com.shavi.RealTimeEventTicketingSystem.repository.TicketRepository;
+import com.shavi.RealTimeEventTicketingSystem.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
 public class TicketPool {
 
-    private final List<Ticket> tickets = Collections.synchronizedList(new ArrayList<>());
+    @Autowired
+    private TicketRepository ticketRepository;
 
-    // Add tickets to the pool
-    public synchronized void addTickets(int numberOfTickets) {
+    @Autowired
+    private UserRepository userRepository;
 
-//        Ticket purchasedTicket = new Ticket();
-//        purchasedTicket.setEventId(eventId);
-//        purchasedTicket.setUserId(userId);
-//        purchasedTicket.setQuantity(quantity);
-//        purchasedTicket.setStatus("PURCHASED");
-
+    public synchronized void addTickets(int numberOfTickets, Long eventId) {
         for (int i = 0; i < numberOfTickets; i++) {
-            tickets.add(new Ticket());
+            Ticket ticket = new Ticket();
+            ticket.setEventId(eventId);
+            ticket.setStatus(TicketStatus.AVAILABLE);
+            ticketRepository.save(ticket);
         }
         System.out.println(numberOfTickets + " tickets added to the pool.");
-        System.out.println("Current Ticket Pool Size: " + tickets.size());
     }
 
-    public synchronized boolean checkTicketAvailability(int quantity) {
-        System.out.println("Checking availability for quantity: " + quantity);
-        System.out.println("Current Ticket Pool Size: " + tickets.size());
-        return tickets.size() >= quantity;
+    public synchronized void purchaseTicket(Long eventId, Integer userId, int quantity) {
+        boolean userExists = userRepository.existsById(userId);
+        if (!userExists) {
+            throw new IllegalArgumentException("User does not exist.");
+        }
+
+        Pageable pageable = PageRequest.of(0, quantity); // Create Pageable for quantity
+        List<Ticket> availableTickets = ticketRepository.findTopNAvailableTickets(eventId, pageable);
+
+        if (availableTickets.size() < quantity) {
+            throw new IllegalStateException("Not enough tickets available.");
+        }
+
+        for (Ticket ticket : availableTickets) {
+            ticket.setStatus(TicketStatus.SOLD);
+            ticket.setUserId(userId);
+            ticketRepository.save(ticket);
+        }
+        System.out.println(quantity + " tickets purchased.");
     }
-
-    public synchronized void purchaseTicket(Long eventId, Integer userId, int quantity) throws InterruptedException {
-        while (tickets.isEmpty()) {
-            System.out.println("No tickets available, waiting...");
-            wait();
-        }
-
-        System.out.println("Attempting to purchase " + quantity + " tickets for eventId " + eventId);
-
-        if (tickets.size() < quantity) {
-            System.out.println("Not enough tickets available for purchase.");
-            throw new IllegalStateException("Not enough tickets available for purchase.");
-        }
-
-//        Ticket purchasedTicket = new Ticket();
-//        purchasedTicket.setEventId(eventId);
-//        purchasedTicket.setUserId(userId);
-//        purchasedTicket.setQuantity(quantity);
-//        purchasedTicket.setStatus("PURCHASED");
-
-        for (int i = 0; i < quantity; i++) {
-            tickets.remove(0);
-        }
-
-        System.out.println(quantity + " tickets purchased. Remaining tickets: " + tickets.size());
-        notifyAll();
-    }
-
 }
-
 
