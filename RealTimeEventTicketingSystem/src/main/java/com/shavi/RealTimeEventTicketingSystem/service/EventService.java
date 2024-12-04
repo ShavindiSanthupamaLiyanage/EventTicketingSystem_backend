@@ -3,8 +3,10 @@ package com.shavi.RealTimeEventTicketingSystem.service;
 import com.shavi.RealTimeEventTicketingSystem.dto.request.EventRequest;
 import com.shavi.RealTimeEventTicketingSystem.entity.Event;
 import com.shavi.RealTimeEventTicketingSystem.entity.SystemConfiguration;
+import com.shavi.RealTimeEventTicketingSystem.enums.TicketStatus;
 import com.shavi.RealTimeEventTicketingSystem.repository.EventRepository;
 import com.shavi.RealTimeEventTicketingSystem.component.TicketPool;
+import com.shavi.RealTimeEventTicketingSystem.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +26,9 @@ public class EventService {
     @Autowired
     private TicketPool ticketPool;
 
-    // Create an event and add the corresponding number of tickets to the pool
+    @Autowired
+    private TicketRepository ticketRepository;
+
     public void addEvent(EventRequest eventRequest) {
         // Fetch the running configuration to validate ticket limits
         SystemConfiguration config = systemConfigurationService.getRunningConfiguration();
@@ -32,40 +36,37 @@ public class EventService {
             throw new IllegalStateException("System is not running. Cannot create events.");
         }
 
-        // Validate ticket count
-        if (eventRequest.getNoOfTickets() > config.getTotalTickets()) {
-            throw new IllegalArgumentException("The number of tickets exceeds the available tickets in the system.");
-        }
-
+        // Create a new event
         Event event = new Event();
         event.setEventName(eventRequest.getEventName());
         event.setNoOfTickets(eventRequest.getNoOfTickets());
+        event.setTotalTickets(eventRequest.getNoOfTickets()); // Initialize total tickets
         event.setDate(eventRequest.getDate());
         event.setUserId(eventRequest.getUserId());
-
 
         // Save the event in the database
         Event savedEvent = eventRepository.save(event);
 
-        // Add the tickets to the ticket pool
-//        ticketPool.addTickets(event.getNoOfTickets(), savedEvent.getEventId()); // Pass event ID
+        // Now that the event is saved, you can safely access its eventId
+        long currentTickets = ticketRepository.countByEventIdAndStatus(savedEvent.getEventId(), TicketStatus.AVAILABLE);
 
+        // Validate if the added tickets exceed the total number of tickets for the event
+        if (currentTickets + eventRequest.getNoOfTickets() > savedEvent.getNoOfTickets()) {
+            throw new IllegalStateException("Adding these tickets exceeds the event's total ticket limit.");
+        }
+
+        // Add the tickets to the ticket pool asynchronously
+        Event finalSavedEvent = savedEvent;
         CompletableFuture.runAsync(() -> {
             try {
-                ticketPool.addTickets(event.getNoOfTickets(), savedEvent.getEventId());
+                ticketPool.addTickets(event.getNoOfTickets(), finalSavedEvent.getEventId());
             } catch (Exception e) {
                 // Handle or log any exceptions from the background thread
                 System.err.println("Error adding tickets to the pool: " + e.getMessage());
             }
         });
-
     }
 
-
-    // Retrieve event by ID
-//    public Event getEventById(Long eventId) {
-//        return eventRepository.findById(eventId).orElse(null);  // Returns null if event is not found
-//    }
 
     public EventRequest getEventById(Long eventId) {
         Event event = eventRepository.findById(eventId).orElse(null);
@@ -105,6 +106,7 @@ public class EventService {
 
         existingEvent.setEventName(eventRequest.getEventName());
         existingEvent.setNoOfTickets(eventRequest.getNoOfTickets());
+        existingEvent.setTotalTickets(eventRequest.getNoOfTickets());
         existingEvent.setDate(eventRequest.getDate());
 
         Event updatedEvent = eventRepository.save(existingEvent);

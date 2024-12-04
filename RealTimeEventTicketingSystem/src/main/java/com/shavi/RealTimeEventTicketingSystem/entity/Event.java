@@ -18,6 +18,7 @@ public class Event {
     private Long eventId;
     private String eventName;
     private int noOfTickets;
+    private int totalTickets; // Total tickets added over time
     private LocalDate date;
     
     @ManyToOne
