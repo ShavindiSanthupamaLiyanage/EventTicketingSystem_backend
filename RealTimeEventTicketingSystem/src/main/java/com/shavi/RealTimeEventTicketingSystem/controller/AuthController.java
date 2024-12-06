@@ -14,8 +14,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -29,21 +32,40 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("user/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserDto userDto) {
         User registeredUser = userService.registerUser(userDto);
-        return ResponseEntity.ok("User registered successfully with ID: " + registeredUser.getId());
+
+        // Build a JSON response with a message and the user ID
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully");
+        response.put("userId", registeredUser.getId());
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/user/login")
     public ResponseEntity<AuthenticationResponse> loginUser(@RequestBody AuthenticationRequest authRequest) {
         try {
+            // Authenticate the user using the authentication service
             Authentication authentication = userService.authenticateUser(authRequest.getUsername(), authRequest.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok(new AuthenticationResponse("User login successful"));
+
+            User user = (User) authentication.getPrincipal(); // Cast to User
+            String role = user.getUserRole().name();
+
+            // Retrieve the user's role (assuming it's an Enum)
+//            String role = ((User) authentication.getPrincipal()).getUserRole().name();
+
+            // Create the response with both message and role
+            AuthenticationResponse response = new AuthenticationResponse("User login successful", role);
+            return ResponseEntity.ok(response); // Return success response with message and role
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid User credentials"));
+            // In case of authentication failure, return an error message
+            return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid User credentials", null));
         }
     }
+
 
     // Get all users
     @GetMapping("/users")

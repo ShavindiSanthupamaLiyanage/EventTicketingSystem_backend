@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -84,8 +85,8 @@ public class UserService {
             throw new BadCredentialsException("Invalid password");
         }
 
-        return new UsernamePasswordAuthenticationToken
-                (user.getUsername(), null);
+        // Attach the user's role in the authentication object
+        return new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority(user.getUserRole().name())));
 
     }
 

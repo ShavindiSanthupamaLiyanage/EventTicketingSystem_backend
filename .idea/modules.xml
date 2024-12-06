@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RealTimeEventTicketingSystem.iml" filepath="$PROJECT_DIR$/.idea/RealTimeEventTicketingSystem.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/EventTicketingSystem_backend.iml" filepath="$PROJECT_DIR$/.idea/EventTicketingSystem_backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RealTimeEventTicketingSystem/RealTimeEventTicketingSystem.iml" filepath="$PROJECT_DIR$/RealTimeEventTicketingSystem/RealTimeEventTicketingSystem.iml" />
     </modules>
   </component>
 </project>
