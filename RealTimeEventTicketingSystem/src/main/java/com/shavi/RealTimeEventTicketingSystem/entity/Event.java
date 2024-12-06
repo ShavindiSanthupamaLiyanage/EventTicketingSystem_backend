@@ -1,5 +1,7 @@
 package com.shavi.RealTimeEventTicketingSystem.entity;
 
+import com.shavi.RealTimeEventTicketingSystem.enums.EventCategory;
+import com.shavi.RealTimeEventTicketingSystem.enums.EventStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,9 +19,15 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eventId;
     private String eventName;
+    private int ticketPrice;
     private int noOfTickets;
-    private int totalTickets; // Total tickets added over time
+    private int totalTickets;
     private LocalDate date;
+    private String venue;
+    private String description;
+    private EventCategory category;
+    private EventStatus status;
+
     
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)

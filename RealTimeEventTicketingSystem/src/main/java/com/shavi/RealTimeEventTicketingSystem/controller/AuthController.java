@@ -53,16 +53,17 @@ public class AuthController {
 
             User user = (User) authentication.getPrincipal(); // Cast to User
             String role = user.getUserRole().name();
+            Integer userId = user.getId();
 
             // Retrieve the user's role (assuming it's an Enum)
 //            String role = ((User) authentication.getPrincipal()).getUserRole().name();
 
             // Create the response with both message and role
-            AuthenticationResponse response = new AuthenticationResponse("User login successful", role);
+            AuthenticationResponse response = new AuthenticationResponse("User login successful", role, userId);
             return ResponseEntity.ok(response); // Return success response with message and role
         } catch (Exception e) {
             // In case of authentication failure, return an error message
-            return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid User credentials", null));
+            return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid User credentials", null, null));
         }
     }
 

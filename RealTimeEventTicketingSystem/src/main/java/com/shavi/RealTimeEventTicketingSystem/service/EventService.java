@@ -40,9 +40,14 @@ public class EventService {
         Event event = new Event();
         event.setEventName(eventRequest.getEventName());
         event.setNoOfTickets(eventRequest.getNoOfTickets());
-        event.setTotalTickets(eventRequest.getNoOfTickets()); // Initialize total tickets
+        event.setTotalTickets(eventRequest.getNoOfTickets());
         event.setDate(eventRequest.getDate());
+        event.setVenue(eventRequest.getVenue());
+        event.setDescription(eventRequest.getDescription());
+        event.setStatus(eventRequest.getStatus());
         event.setUserId(eventRequest.getUserId());
+        event.setTicketPrice(eventRequest.getTicketPrice());
+
 
         // Save the event in the database
         Event savedEvent = eventRepository.save(event);
@@ -67,7 +72,6 @@ public class EventService {
         });
     }
 
-
     public EventRequest getEventById(Long eventId) {
         Event event = eventRepository.findById(eventId).orElse(null);
         if (event == null) {
@@ -76,9 +80,14 @@ public class EventService {
         return new EventRequest(
                 event.getEventId(),
                 event.getEventName(),
+                event.getTicketPrice(),
                 event.getNoOfTickets(),
                 event.getDate(),
-                event.getUserId()
+                event.getUserId(),
+                event.getVenue(),
+                event.getDescription(),
+                event.getCategory(),
+                event.getStatus()
         );
     }
 
@@ -91,9 +100,14 @@ public class EventService {
         return new EventRequest(
                 event.getEventId(),
                 event.getEventName(),
+                event.getTicketPrice(),
                 event.getNoOfTickets(),
                 event.getDate(),
-                event.getUserId()
+                event.getUserId(),
+                event.getVenue(),
+                event.getDescription(),
+                event.getCategory(),
+                event.getStatus()
         );
     }
 
@@ -105,17 +119,27 @@ public class EventService {
         }
 
         existingEvent.setEventName(eventRequest.getEventName());
+        existingEvent.setTicketPrice(eventRequest.getTicketPrice());
         existingEvent.setNoOfTickets(eventRequest.getNoOfTickets());
         existingEvent.setTotalTickets(eventRequest.getNoOfTickets());
         existingEvent.setDate(eventRequest.getDate());
+        existingEvent.setVenue(eventRequest.getVenue()); // Update venue
+        existingEvent.setDescription(eventRequest.getDescription()); // Update description
+        existingEvent.setCategory(eventRequest.getCategory()); // Update category
+        existingEvent.setStatus(eventRequest.getStatus()); // Update event category
 
         Event updatedEvent = eventRepository.save(existingEvent);
         return new EventRequest(
                 updatedEvent.getEventId(),
                 updatedEvent.getEventName(),
+                updatedEvent.getTicketPrice(),
                 updatedEvent.getNoOfTickets(),
                 updatedEvent.getDate(),
-                updatedEvent.getUserId()
+                updatedEvent.getUserId(),
+                updatedEvent.getVenue(),
+                updatedEvent.getDescription(),
+                updatedEvent.getCategory(),
+                updatedEvent.getStatus()
         );
     }
 
@@ -128,33 +152,21 @@ public class EventService {
         eventRepository.delete(event);
     }
 
-//    // Update event when a ticket is purchased
-//    public void updateEventForTicketPurchase(Long eventId) {
-//        Event existingEvent = getEventById(eventId);
-//        if (existingEvent == null) {
-//            throw new IllegalArgumentException("Event not found.");
-//        }
-//
-//        if (existingEvent.getNoOfTickets() <= 0) {
-//            throw new IllegalStateException("No tickets available for this event.");
-//        }
-//
-//        // Decrement the ticket count
-//        existingEvent.setNoOfTickets(existingEvent.getNoOfTickets() - 1);
-//
-//        // Save the updated event
-//        eventRepository.save(existingEvent);
-//    }
-
     // Retrieve all events
     public List<EventRequest> getAllEvents() {
         return eventRepository.findAll().stream()
                 .map(event -> new EventRequest(
                         event.getEventId(),
                         event.getEventName(),
+                        event.getTicketPrice(),
                         event.getNoOfTickets(),
                         event.getDate(),
-                        event.getUserId()))
+                        event.getUserId(),
+                        event.getVenue(), // Return venue
+                        event.getDescription(), // Return description
+                        event.getCategory(), // Return category
+                        event.getStatus() // Return eventCategory
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -164,10 +176,15 @@ public class EventService {
                 .map(event -> new EventRequest(
                         event.getEventId(),
                         event.getEventName(),
+                        event.getTicketPrice(),
                         event.getNoOfTickets(),
                         event.getDate(),
-                        event.getUserId()))
+                        event.getUserId(),
+                        event.getVenue(),
+                        event.getDescription(),
+                        event.getCategory(),
+                        event.getStatus()
+                ))
                 .collect(Collectors.toList());
     }
-
 }

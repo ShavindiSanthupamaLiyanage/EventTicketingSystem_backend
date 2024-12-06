@@ -1,15 +1,16 @@
 package com.shavi.RealTimeEventTicketingSystem.controller;
 
 import com.shavi.RealTimeEventTicketingSystem.dto.request.EventRequest;
-import com.shavi.RealTimeEventTicketingSystem.entity.Event;
-import com.shavi.RealTimeEventTicketingSystem.repository.EventRepository;
 import com.shavi.RealTimeEventTicketingSystem.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/Event")
 public class EventController {
@@ -18,14 +19,30 @@ public class EventController {
     private EventService eventService;
 
     @PostMapping("/addEvent")
-    public ResponseEntity<String> addEvent(@RequestBody EventRequest eventRequest) {
+    public ResponseEntity<Map<String, String>> addEvent(@RequestBody EventRequest eventRequest) {
         try {
             eventService.addEvent(eventRequest);
-            return ResponseEntity.ok("Event and tickets added successfully.");
+
+            // Prepare a success response in JSON format
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Event and tickets added successfully.");
+            response.put("status", "success");
+
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(("Error: " + e.getMessage()));
+            // Prepare an error response in JSON format
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error: " + e.getMessage());
+            response.put("status", "error");
+
+            return ResponseEntity.badRequest().body(response);
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(500).body("System Error: " + e.getMessage());
+            // Prepare a system error response in JSON format
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "System Error: " + e.getMessage());
+            response.put("status", "error");
+
+            return ResponseEntity.status(500).body(response);
         }
     }
 
