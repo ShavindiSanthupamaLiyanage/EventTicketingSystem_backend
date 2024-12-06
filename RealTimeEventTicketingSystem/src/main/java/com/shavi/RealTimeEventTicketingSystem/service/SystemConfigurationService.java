@@ -4,6 +4,8 @@ import com.shavi.RealTimeEventTicketingSystem.entity.SystemConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.repository.SystemConfigurationRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SystemConfigurationService {
     private final SystemConfigurationRepository repository;
@@ -47,5 +49,9 @@ public class SystemConfigurationService {
                 .filter(SystemConfiguration::isRunning)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<SystemConfiguration> getAllConfigurations() {
+        return repository.findAll();
     }
 }
