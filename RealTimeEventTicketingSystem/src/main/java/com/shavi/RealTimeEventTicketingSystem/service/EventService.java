@@ -47,6 +47,7 @@ public class EventService {
         event.setStatus(eventRequest.getStatus());
         event.setUserId(eventRequest.getUserId());
         event.setTicketPrice(eventRequest.getTicketPrice());
+        event.setCategory(eventRequest.getCategory());
 
 
         // Save the event in the database
