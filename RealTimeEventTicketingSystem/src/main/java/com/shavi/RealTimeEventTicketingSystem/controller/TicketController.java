@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tickets")
@@ -37,4 +38,11 @@ public class TicketController {
         List<Ticket> tickets = ticketService.getAvailableTickets(eventId, quantity);
         return ResponseEntity.ok(tickets);
     }
+
+    @GetMapping("/user/{userId}/ticket-counts")
+    public ResponseEntity<Map<Long, Long>> getTicketCountsByUserId(@PathVariable Integer userId) {
+        Map<Long, Long> ticketCounts = ticketService.getTicketCountsByUserId(userId);
+        return ResponseEntity.ok(ticketCounts);
+    }
+
 }

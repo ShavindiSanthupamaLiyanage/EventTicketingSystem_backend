@@ -11,7 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TicketService {
@@ -55,4 +58,16 @@ public class TicketService {
         Pageable pageable = PageRequest.of(0, quantity);
         return ticketRepository.findTopNAvailableTickets(eventId, pageable);
     }
+
+    public Map<Long, Long> getTicketCountsByUserId(Integer userId) {
+        List<Object[]> results = ticketRepository.findTicketCountsByUserId(userId);
+        Map<Long, Long> ticketCounts = new HashMap<>();
+        for (Object[] result : results) {
+            Long eventId = (Long) result[0];
+            Long count = (Long) result[1];
+            ticketCounts.put(eventId, count);
+        }
+        return ticketCounts;
+    }
+
 }
