@@ -16,6 +16,7 @@ public class EventRequest {
     private String eventName;
     private int ticketPrice;
     private int noOfTickets;
+    private int totalTickets;
     private LocalDate date;
     private Integer userId;
     private String venue;
