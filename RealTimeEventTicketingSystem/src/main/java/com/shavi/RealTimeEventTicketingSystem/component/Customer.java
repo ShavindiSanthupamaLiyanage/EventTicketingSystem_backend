@@ -1,6 +1,8 @@
 package com.shavi.RealTimeEventTicketingSystem.component;
 
-public class Customer implements Runnable {
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
+
+public class Customer extends LoggerConfiguration implements Runnable {
 
     private final TicketPool ticketPool;
     private final Long eventId;
@@ -18,9 +20,9 @@ public class Customer implements Runnable {
     public void run() {
         try {
             ticketPool.purchaseTicket(eventId, userId, quantity);
-            System.out.println("Customer " + userId + " successfully purchased " + quantity + " tickets.");
+            logger.info("Customer {} successfully purchased {} tickets for event {}.", userId, quantity, eventId);
         } catch (IllegalStateException | IllegalArgumentException e) {
-            System.err.println("Customer " + userId + " failed to purchase tickets: " + e.getMessage());
+            logger.error("Customer {} failed to purchase tickets for event {}: {}", userId, eventId, e.getMessage());
         }
     }
 }

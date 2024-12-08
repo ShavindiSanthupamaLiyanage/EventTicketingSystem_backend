@@ -1,5 +1,6 @@
 package com.shavi.RealTimeEventTicketingSystem.controller;
 
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.dto.UserDto;
 import com.shavi.RealTimeEventTicketingSystem.dto.request.AuthenticationRequest;
 import com.shavi.RealTimeEventTicketingSystem.dto.response.AuthenticationResponse;
@@ -21,28 +22,29 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
-    @Autowired
-    private JwtUtil jwtUtil;
+public class AuthController extends LoggerConfiguration {
 
     @Autowired
     private UserService userService;
 
     @PostMapping("user/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserDto userDto) {
-        User registeredUser = userService.registerUser(userDto);
+        try {
+            User registeredUser = userService.registerUser(userDto);
 
-        // Build a JSON response with a message and the user ID
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "User registered successfully");
-        response.put("userId", registeredUser.getId());
+            // Build a JSON response with a message and the user ID
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User registered successfully");
+            response.put("userId", registeredUser.getId());
 
-        return ResponseEntity.ok(response);
+            // Log user registration
+            logger.info("User registered successfully with ID: {}", registeredUser.getId());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error during user registration", e);
+            return ResponseEntity.status(500).body(Map.of("message", "User registration failed"));
+        }
     }
-
 
     @PostMapping("/user/login")
     public ResponseEntity<AuthenticationResponse> loginUser(@RequestBody AuthenticationRequest authRequest) {
@@ -55,22 +57,21 @@ public class AuthController {
             String role = user.getUserRole().name();
             Integer userId = user.getId();
 
-            // Retrieve the user's role (assuming it's an Enum)
-//            String role = ((User) authentication.getPrincipal()).getUserRole().name();
-
             // Create the response with both message and role
             AuthenticationResponse response = new AuthenticationResponse("User login successful", role, userId);
+            logger.info("User with username '{}' logged in successfully.", authRequest.getUsername());
             return ResponseEntity.ok(response); // Return success response with message and role
         } catch (Exception e) {
             // In case of authentication failure, return an error message
+            logger.warn("Failed login attempt for username '{}'", authRequest.getUsername());
             return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid User credentials", null, null));
         }
     }
 
-
     // Get all users
     @GetMapping("/users")
     public List<User> getAllUsers() {
+        logger.info("Fetching all users.");
         return userService.getAllUser();
     }
 
@@ -78,6 +79,7 @@ public class AuthController {
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUsersById(@PathVariable Integer id) {
         User user = userService.getUserById(id);
+        logger.info("Fetching user with ID: {}", id);
         return ResponseEntity.ok(user);
     }
 
@@ -85,6 +87,7 @@ public class AuthController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User updatedUser) {
         User user = userService.updateUser(id, updatedUser);
+        logger.info("User with ID: {} updated successfully.", id);
         return ResponseEntity.ok(user);
     }
 
@@ -92,9 +95,13 @@ public class AuthController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteVendor(@PathVariable Integer id) {
         boolean deleted = userService.deleteUser(id);
-        return deleted
-                ? ResponseEntity.ok("User deleted successfully.")
-                : ResponseEntity.status(404).body("User not found.");
+        if (deleted) {
+            logger.info("User with ID: {} deleted successfully.", id);
+            return ResponseEntity.ok("User deleted successfully.");
+        } else {
+            logger.warn("User with ID: {} not found for deletion.", id);
+            return ResponseEntity.status(404).body("User not found.");
+        }
     }
 }
 

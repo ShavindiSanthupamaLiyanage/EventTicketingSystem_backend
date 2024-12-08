@@ -1,5 +1,6 @@
 package com.shavi.RealTimeEventTicketingSystem.component;
 
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.entity.Event;
 import com.shavi.RealTimeEventTicketingSystem.entity.Ticket;
 import com.shavi.RealTimeEventTicketingSystem.enums.TicketStatus;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class TicketPool {
+public class TicketPool extends LoggerConfiguration {
 
     @Autowired
     private TicketRepository ticketRepository;
@@ -33,16 +34,21 @@ public class TicketPool {
     public synchronized void addTickets(int numberOfTickets, Long eventId) {
         while (systemConfigurationService.getRunningConfiguration() == null) {
             try {
+                logger.info("Waiting for system configuration to be ready...");
                 Thread.sleep(1000);
                 wait(); // Wait until the system configuration is running
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                logger.error("Thread interrupted while waiting for system configuration.", e);
                 throw new IllegalStateException("Thread interrupted while waiting for system configuration.");
             }
         }
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found."));
+                .orElseThrow(() -> {
+                    logger.error("Event with ID {} not found.", eventId);
+                    return new IllegalArgumentException("Event not found.");
+                });
 
 //        try {
 //            Thread.sleep(1000); // Simulate delay after fetching event details
@@ -53,6 +59,7 @@ public class TicketPool {
         long currentTickets = ticketRepository.countByEventIdAndStatus(eventId, TicketStatus.AVAILABLE);
 
         if (currentTickets + numberOfTickets > event.getNoOfTickets()) {
+            logger.error("Adding {} tickets exceeds the event's total ticket limit for event {}", numberOfTickets, eventId);
             throw new IllegalStateException("Adding these tickets exceeds the event's total ticket limit.");
         }
 
@@ -65,12 +72,14 @@ public class TicketPool {
                 Thread.sleep(1000); // Simulate delay for each ticket save operation
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                logger.error("Thread interrupted while adding ticket for event {}", eventId, e);
                 break; // Exit loop on interruption
             }
 
             ticketRepository.save(ticket);
+            logger.info("{} tickets added to the pool for event {}", numberOfTickets, eventId);
         }
-        System.out.println(numberOfTickets + " tickets added to the pool.");
+        logger.info("{} tickets added to the pool for event {}", numberOfTickets, eventId);
         notifyAll(); // Notify all threads that tickets have been added
     }
 
@@ -98,15 +107,18 @@ public class TicketPool {
     public synchronized void purchaseTicket(Long eventId, Integer userId, int quantity) {
         while (systemConfigurationService.getRunningConfiguration() == null) {
             try {
+                logger.info("Waiting for system configuration to be ready...");
                 wait(); // Wait until the system configuration is running
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                logger.error("Thread interrupted while waiting for system configuration.", e);
                 throw new IllegalStateException("Thread interrupted while waiting for system configuration.");
             }
         }
 
         boolean userExists = userRepository.existsById(userId);
         if (!userExists) {
+            logger.error("User {} does not exist.", userId);
             throw new IllegalArgumentException("User does not exist.");
         }
 
@@ -115,6 +127,7 @@ public class TicketPool {
         List<Ticket> availableTickets = ticketRepository.findTopNAvailableTickets(eventId, pageable);
 
         if (availableTickets.size() < quantity) {
+            logger.error("Not enough tickets available for event {}. Requested: {}, Available: {}", eventId, quantity, availableTickets.size());
             throw new IllegalStateException("Not enough tickets available.");
         }
 
@@ -127,16 +140,16 @@ public class TicketPool {
                 try {
                     Thread.sleep(1000); // Simulate processing delay
                     ticketRepository.save(ticket);
-                    System.out.println("Ticket " + ticket.getId() + " purchased by user " + userId);
+                    logger.info("Ticket {} purchased by user {} for event {}", ticket.getId(), userId, eventId);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    System.err.println("Thread interrupted while purchasing ticket " + ticket.getId());
+                    logger.error("Thread interrupted while purchasing ticket {} for event {}", ticket.getId(), eventId, e);
                 }
             }).start();
         }
 
 //        System.out.println(quantity + " tickets purchased by user " + userId + ".");
-        System.out.println("Customer " + userId + " successfully purchased " + quantity + " tickets.");
+        logger.info("Customer {} successfully purchased {} tickets for event {}", userId, quantity, eventId);
         notifyAll(); // Notify other threads that tickets have been processed
     }
 

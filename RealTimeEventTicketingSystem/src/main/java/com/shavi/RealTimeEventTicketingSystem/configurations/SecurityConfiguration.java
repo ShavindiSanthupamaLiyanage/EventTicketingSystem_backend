@@ -13,8 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -29,21 +27,6 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for testing; enable it in production
                 .authorizeHttpRequests(auth -> auth
-
-
-//                        .requestMatchers("/api/vendors/register").permitAll()
-//                        .requestMatchers("/api/customers/register").permitAll() // Allow public access to registration endpoint
-
-                                //restricted
-//                                .requestMatchers("/api/auth/login").permitAll()
-//                        .requestMatchers("/api/vendors/**").hasRole(UserRole.VENDOR.name())
-//                        .requestMatchers("/api/customers/**").hasRole(UserRole.CUSTOMER.name())
-//                        .requestMatchers("/api/auth/login", "/api/vendors/register", "/api/customers/register").permitAll()
-//                                .anyRequest().authenticated() // All other endpoints require authentication
-
-
-
-                                //permit all
                                 .anyRequest().permitAll()
                 )
                 .httpBasic(httpBasicCustomizer -> {}); // Enable basic HTTP authentication for secured endpoints
@@ -51,12 +34,10 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 
     // Use your own UserDetailsService in production
     @Bean

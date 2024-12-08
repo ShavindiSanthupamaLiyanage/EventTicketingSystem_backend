@@ -1,13 +1,12 @@
 package com.shavi.RealTimeEventTicketingSystem.service;
 
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.dto.UserDto;
 import com.shavi.RealTimeEventTicketingSystem.entity.User;
 import com.shavi.RealTimeEventTicketingSystem.exception.ResourceNotFoundException;
 import com.shavi.RealTimeEventTicketingSystem.exception.ValidationException;
 import com.shavi.RealTimeEventTicketingSystem.repository.UserRepository;
 import com.shavi.RealTimeEventTicketingSystem.util.ValidationUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,8 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserService {
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+public class UserService extends LoggerConfiguration {
 
     @Autowired
     private UserRepository userRepository;
@@ -70,6 +68,8 @@ public class UserService {
 
     // Authenticate User's credentials
     public Authentication authenticateUser(String username, String password) {
+        logger.info("Attempting to authenticate user with username: {}", username);
+
         List<User> users = userRepository.findByUsername(username);
 
         if (users.isEmpty()) {
@@ -86,41 +86,59 @@ public class UserService {
         }
 
         // Attach the user's role in the authentication object
+        logger.info("User with username '{}' authenticated successfully.", username);
         return new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority(user.getUserRole().name())));
 
     }
 
     // Get all user
     public List<User> getAllUser() {
+        logger.info("Fetching all users from the database.");
         return userRepository.findAll();
     }
 
     // Get user by ID
     public User getUserById(Integer id) {
+        logger.info("Fetching user with ID: {}", id);
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> {
+                    logger.error("User not found with ID: {}", id);
+                    return new ResourceNotFoundException("User not found with ID: " + id);
+                });
     }
 
     // Update an existing user
     public User updateUser(Integer id, User updatedUser) {
+        logger.info("Updating user with ID: {}", id);
+
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> {
+                    logger.error("User not found with ID: {}", id);
+                    return new ResourceNotFoundException("User not found with ID: " + id);
+                });
+
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setPassword(updatedUser.getPassword());
         existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
         userRepository.save(existingUser);
-        return userRepository.save(existingUser);
 
+        logger.info("Successfully updated user with ID: {}", id);
+        return userRepository.save(existingUser);
     }
 
     // Delete User
     public boolean deleteUser(Integer id) {
+        logger.info("Attempting to delete user with ID: {}", id);
+
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
+            logger.info("User with ID: {} deleted successfully.", id);
             return true;
+        } else {
+            logger.warn("User not found with ID: {}", id);
+            return false;
         }
-        return false;
     }
 }
 

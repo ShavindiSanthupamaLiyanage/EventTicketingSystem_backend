@@ -1,8 +1,9 @@
 package com.shavi.RealTimeEventTicketingSystem.component;
 
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.entity.SystemConfiguration;
 
-public class Vendor implements Runnable {
+public class Vendor extends LoggerConfiguration implements Runnable {
 
     private final TicketPool ticketPool;
     private final Long eventId;
@@ -18,9 +19,9 @@ public class Vendor implements Runnable {
     public void run() {
         try {
             ticketPool.addTickets(ticketsToAdd, eventId);
-            System.out.println(Thread.currentThread().getName() + " added " + ticketsToAdd + " tickets.");
+            logger.info(Thread.currentThread().getName() + " added " + ticketsToAdd + " tickets.");
         } catch (IllegalStateException e) {
-            System.err.println(Thread.currentThread().getName() + ": " + e.getMessage());
+            logger.error(Thread.currentThread().getName() + ": " + e.getMessage(), e);
         }
     }
 }

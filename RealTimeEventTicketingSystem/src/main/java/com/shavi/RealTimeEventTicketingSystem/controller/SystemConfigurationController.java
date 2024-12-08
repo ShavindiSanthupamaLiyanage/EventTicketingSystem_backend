@@ -1,5 +1,6 @@
 package com.shavi.RealTimeEventTicketingSystem.controller;
 
+import com.shavi.RealTimeEventTicketingSystem.configurations.LoggerConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.entity.SystemConfiguration;
 import com.shavi.RealTimeEventTicketingSystem.service.SystemConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/configurations")
-public class SystemConfigurationController {
+public class SystemConfigurationController extends LoggerConfiguration {
 
     @Autowired
     private SystemConfigurationService systemConfigurationService;
